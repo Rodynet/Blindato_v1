@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DptoLibre OS - Pasaporte Validado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #E8EAF0; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .mobile-shell { width: 100%; height: 100vh; max-width: 414px; margin: 0 auto; background: #F0F2F6; position: relative; overflow: hidden; box-shadow: 0 40px 100px rgba(0,0,0,0.2); }
+        .passport-gradient { background: linear-gradient(135deg, #0D1B4B 0%, #0055DD 100%); }
+        .animate-up { animation: slideUp 0.4s ease-out; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .blur-locked { filter: grayscale(1) opacity(0.5); pointer-events: none; }
+        .logo-font { letter-spacing: -0.05em; font-weight: 800; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const Icon = ({ name, size = 24, className = "" }) => {
+            useEffect(() => { window.lucide && window.lucide.createIcons(); }, [name]);
+            return <i data-lucide={name} style={{ width: size, height: size }} className={className}></i>;
+        };
+
+        const Logo = ({ light = false, size = "md" }) => (
+            <div className={`flex flex-col items-center ${light ? 'text-white' : 'text-[#0D1B4B]'}`}>
+                <svg width={size === "lg" ? "56" : "32"} viewBox="0 0 32 40" fill="none">
+                    <path d="M16 0L32 6.4V33.6L16 40V6.4L16 0Z" fill={light ? "white" : "#0055DD"} fillOpacity="0.3"/>
+                    <path d="M0 6.4L16 0V33.6L0 40V6.4Z" fill={light ? "white" : "#0055DD"}/>
+                </svg>
+                <div className={`logo-font ${size === "lg" ? 'text-2xl mt-2' : 'text-lg mt-1'}`}>
+                    dpto <span className="font-light">libre</span>
+                </div>
+            </div>
+        );
+
+        function DptoLibreApp() {
+            const [view, setView] = useState('splash'); // splash, validation_steps, payment, passport_ready, home_active
+            const [valStep, setValStep] = useState(1); // 1:DNI, 2:Recibos, 3:Historial
+
+            // --- PASOS DE VALIDACIÓN ---
+
+            const ValidationWizard = () => {
+                const steps = [
+                    { id: 1, title: "Identidad", desc: "Escaneo Biométrico de DNI", icon: "scan-face" },
+                    { id: 2, title: "Ingresos", desc: "Carga de Recibos de Sueldo", icon: "file-text" },
+                    { id: 3, title: "Historial", desc: "Alquileres anteriores", icon: "history" }
+                ];
+
+                return (
+                    <div className="h-full flex flex-col bg-white animate-up">
+                        <header className="p-8 pb-4">
+                            <button onClick={() => setView('splash')}><Icon name="arrow-left" className="text-slate-400"/></button>
+                            <h2 className="text-2xl font-black text-[#0D1B4B] mt-6 leading-none uppercase tracking-tighter">Validación</h2>
+                            <div className="flex gap-2 mt-4">
+                                {steps.map(s => (
+                                    <div key={s.id} className={`h-1.5 flex-1 rounded-full ${valStep >= s.id ? 'bg-[#00D1FF]' : 'bg-slate-100'}`}></div>
+                                ))}
+                            </div>
+                        </header>
+
+                        <main className="p-8 flex-1 space-y-8 no-scrollbar overflow-y-auto">
+                            {valStep === 1 && (
+                                <div className="space-y-6 animate-up">
+                                    <div className="w-full aspect-[3/2] bg-slate-900 rounded-3xl flex flex-col items-center justify-center text-white relative border-4 border-[#0055DD]/20 overflow-hidden">
+                                        <div className="absolute inset-0 border-2 border-[#00D1FF] m-8 rounded-xl opacity-40"></div>
+                                        <Icon name="camera" size={40} className="text-[#00D1FF] mb-4" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest">Frente de tu DNI</p>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <h3 className="font-bold text-slate-800 uppercase text-sm">Instrucciones</h3>
+                                        <p className="text-xs text-slate-500 leading-relaxed">Buscá un lugar con buena luz y evitá reflejos en el plástico del documento.</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {valStep === 2 && (
+                                <div className="space-y-6 animate-up">
+                                    <div className="grid grid-cols-1 gap-4">
+                                        {['Recibo Marzo', 'Recibo Febrero', 'Recibo Enero'].map((r, i) => (
+                                            <div key={i} className="p-6 border-2 border-dashed border-slate-200 rounded-3xl flex items-center justify-between group hover:border-[#0055DD] transition-all">
+                                                <div className="flex items-center gap-4">
+                                                    <Icon name="file-up" className="text-slate-300 group-hover:text-[#0055DD]"/>
+                                                    <span className="text-xs font-black text-slate-400 group-hover:text-slate-800 uppercase">{r}</span>
+                                                </div>
+                                                <button className="bg-slate-100 p-2 rounded-xl text-slate-400"><Icon name="plus" size={16}/></button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase text-center italic">La IA procesará tus ingresos netos automáticamente.</p>
+                                </div>
+                            )}
+
+                            {valStep === 3 && (
+                                <div className="space-y-6 animate-up">
+                                    <div className="bg-white border-2 border-slate-100 p-6 rounded-3xl space-y-4">
+                                        <h4 className="text-xs font-black text-[#0D1B4B] uppercase tracking-tighter">Último domicilio alquilado</h4>
+                                        <input type="text" placeholder="Dirección de la propiedad" className="w-full bg-slate-50 border-none p-4 rounded-xl text-sm" />
+                                        <input type="text" placeholder="Nombre de Inmobiliaria / Dueño" className="w-full bg-slate-50 border-none p-4 rounded-xl text-sm" />
+                                        <div className="flex gap-2">
+                                            <input type="number" placeholder="Años" className="w-1/2 bg-slate-50 border-none p-4 rounded-xl text-sm" />
+                                            <div className="w-1/2 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-xl">
+                                                <Icon name="check" size={16} className="mr-2"/> <span className="text-[10px] font-bold uppercase">Verificable</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] text-slate-400 font-bold uppercase text-center">Esto suma +50 puntos a tu Rental Score.</p>
+                                </div>
+                            )}
+                        </main>
+
+                        <footer className="p-8">
+                            <button 
+                                onClick={() => valStep < 3 ? setValStep(valStep + 1) : setView('payment')}
+                                className="w-full bg-[#0055DD] text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl"
+                            >
+                                {valStep === 3 ? "Finalizar Carga" : "Continuar"}
+                            </button>
+                        </footer>
+                    </div>
+                );
+            };
+
+            // --- PANTALLA DE PAGO DE INFORME ---
+
+            const PaymentScreen = () => (
+                <div className="h-full flex flex-col bg-[#0D1B4B] text-white p-10 justify-center animate-up">
+                    <div className="text-center mb-10">
+                        <div className="w-20 h-20 bg-white/10 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+                            <Icon name="credit-card" size={40} className="text-[#00D1FF]" />
+                        </div>
+                        <h2 className="text-3xl font-black tracking-tighter uppercase leading-none">Validación Final</h2>
+                        <p className="text-slate-400 text-sm mt-4">Para emitir tu Pasaporte, debemos procesar tu Informe Infoexperto oficial.</p>
+                    </div>
+
+                    <div className="bg-white/5 border border-white/10 p-8 rounded-[2.5rem] space-y-6">
+                        <div className="flex justify-between items-center">
+                            <span className="text-xs font-bold uppercase opacity-60">Costo del Informe</span>
+                            <span className="text-xl font-black">$4.500</span>
+                        </div>
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-3 text-[10px] font-black uppercase text-emerald-400">
+                                <Icon name="check" size={14}/> Identidad Validada
+                            </div>
+                            <div className="flex items-center gap-3 text-[10px] font-black uppercase text-emerald-400">
+                                <Icon name="check" size={14}/> Ingresos Auditados
+                            </div>
+                        </div>
+                    </div>
+
+                    <button onClick={() => setView('passport_ready')} className="mt-12 w-full bg-[#00D1FF] text-[#0D1B4B] py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl">Pagar y Activar Pasaporte</button>
+                    <p className="text-[8px] text-center mt-6 text-slate-500 uppercase tracking-widest">Pago procesado por Stripe / MercadoPago</p>
+                </div>
+            );
+
+            // --- PANTALLA PRINCIPAL (MODO LOCKET / ACTIVO) ---
+
+            const HomeView = () => (
+                <div className="h-full flex flex-col bg-[#F0F2F6] animate-up overflow-y-auto no-scrollbar pb-32">
+                    <header className="p-8 bg-white border-b flex justify-between items-center sticky top-0 z-20">
+                        <Logo />
+                        <div className="flex items-center gap-3">
+                             <div className="text-right">
+                                <p className="text-[8px] font-black text-slate-400 uppercase leading-none">Perfil</p>
+                                <p className="text-[10px] font-bold text-slate-800">Marcos G.</p>
+                             </div>
+                             <div className="w-10 h-10 rounded-full border-2 border-indigo-600 bg-slate-100 overflow-hidden">
+                                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Marcos" />
+                             </div>
+                        </div>
+                    </header>
+
+                    <main className="p-6 space-y-6">
+                        {/* Pasaporte Card */}
+                        <div className="passport-gradient p-8 rounded-[2.5rem] text-white shadow-2xl relative overflow-hidden">
+                            <Icon name="shield-check" size={150} className="absolute right-[-40px] top-[-40px] opacity-10" />
+                            <p className="text-[10px] font-black uppercase text-[#00D1FF] tracking-widest">Poder de Alquiler Validado</p>
+                            <h2 className="text-5xl font-black tracking-tighter mt-2">$550.000</h2>
+                            <div className="mt-8 flex justify-between items-center border-t border-white/10 pt-6">
+                                <div className="bg-emerald-500 text-[8px] font-black px-2 py-1 rounded text-[#0D1B4B] uppercase">Informe Infoexperto: OK</div>
+                                <Icon name="qr-code" size={32} className="opacity-80" />
+                            </div>
+                        </div>
+
+                        {/* FUNCIONES GRISES (BLOQUEADAS HASTA CONTRATO) */}
+                        <div className="space-y-4">
+                            <div className="flex justify-between items-center px-2">
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Mi Alquiler Activo</h4>
+                                <Icon name="lock" size={14} className="text-slate-300" />
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-4 blur-locked">
+                                <div className="bg-white p-6 rounded-[2rem] border shadow-sm">
+                                    <Icon name="credit-card" className="mb-2 text-slate-400" />
+                                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-tighter">Pagar Mes</p>
+                                </div>
+                                <div className="bg-white p-6 rounded-[2rem] border shadow-sm">
+                                    <Icon name="wrench" className="mb-2 text-slate-400" />
+                                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-tighter">Tickets</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-6 rounded-[2rem] border shadow-sm blur-locked flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <Icon name="camera" className="text-slate-400" />
+                                    <p className="text-[10px] font-black text-slate-800 uppercase tracking-tighter">Bitácora de Estado</p>
+                                </div>
+                                <Icon name="chevron-right" className="text-slate-200" />
+                            </div>
+                        </div>
+
+                        {/* Rampa Hipotecaria (Siempre Activa) */}
+                        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">
+                            <Icon name="trending-up" className="absolute right-4 top-4 text-emerald-500" />
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Meta Casa Propia</p>
+                            <div className="h-4 bg-slate-50 rounded-full overflow-hidden mb-4 border border-slate-100 p-1">
+                                <div className="h-full bg-gradient-to-r from-[#0055DD] to-emerald-400 rounded-full" style={{ width: '45%' }}></div>
+                            </div>
+                            <p className="text-[9px] text-slate-500 font-bold italic">Validación completa. Tu score está listo para el mercado.</p>
+                        </div>
+                    </main>
+
+                    <nav className="absolute bottom-0 w-full bg-white/90 backdrop-blur-md border-t p-6 pb-10 flex justify-around">
+                        <Icon name="home" className="text-[#0055DD]" strokeWidth={3}/>
+                        <Icon name="search" className="text-slate-300" />
+                        <Icon name="wallet" className="text-slate-300" />
+                        <Icon name="user" className="text-slate-300" />
+                    </nav>
+                </div>
+            );
+
+            // --- LÓGICA DE NAVEGACIÓN ---
+
+            if (view === 'splash') return (
+                <div className="mobile-shell passport-gradient flex flex-col justify-center items-center p-10 text-center text-white">
+                    <Logo light size="lg" />
+                    <h2 className="text-2xl font-black mt-10 uppercase tracking-tighter">Tu Pasaporte de Alquiler</h2>
+                    <p className="text-white/60 text-sm mt-4 leading-relaxed">Valida tu identidad, tus ingresos y obtené tu capacidad de pago para alquilar sin vueltas.</p>
+                    <button onClick={() => setView('validation_steps')} className="w-full bg-[#00D1FF] text-[#0D1B4B] py-5 rounded-2xl font-black text-xs uppercase tracking-widest shadow-2xl mt-12">Empezar Validación</button>
+                </div>
+            );
+
+            if (view === 'validation_steps') return <ValidationWizard />;
+            if (view === 'payment') return <PaymentScreen />;
+            if (view === 'passport_ready' || view === 'home_active') return <HomeView />;
+
+            return null;
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<DptoLibreApp />);
+    </script>
+</body>
+</html>
